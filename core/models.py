@@ -311,7 +311,7 @@ class mrentry(models.Model):
     supplier= models.ForeignKey(supplier, on_delete=models.CASCADE,blank=True,null=True)
   
     #customer = models.ForeignKey(Customer, on_delete=models.CASCADE,blank=True,null=True)
-    UserItem  = models.ManyToManyField(UserItem,blank=True)
+   # UserItem  = models.ManyToManyField(UserItem,blank=True)
     left = models.DecimalField(
         decimal_places=0,
         max_digits=10,
@@ -492,7 +492,7 @@ class corpocatagory(models.Model):
 
 class corportepay(models.Model):    
     ammount = models.PositiveIntegerField(default=0)
-    suppiler= models.ForeignKey(supplier,on_delete=models.CASCADE,null=True,blank=True)
+    supplier= models.ForeignKey(supplier,on_delete=models.CASCADE,null=True,blank=True)
     added = models.DateTimeField(auto_now_add=True,null=True) 
     remarks = models.TextField(max_length=100,null=True)
     corpocatagory= models.ForeignKey(corpocatagory,on_delete=models.CASCADE,null=True,blank=True)

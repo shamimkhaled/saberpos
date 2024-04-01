@@ -51,6 +51,7 @@ urlpatterns = [
     path('returnlist', views.returnlist, name='returnlist'),
     #bill
     path('bill_list', views.bill_list, name='bill_list'),
+    path('supplierbill_list', views.supplierbill_list, name='supplierbill_list'),
 
    
     path('productlist', views.productlist, name='productlist'),
@@ -70,6 +71,9 @@ urlpatterns = [
    # path('customerdetail', views.customersolddeatails, name='bill'),
     path("search/", views.search, name="search_results"),
     path('customerbalancesheet', views.customerbalancesheet, name='customerbalancesheet'),
+
+
+    path('suplierlist', views.suplierlist, name='suplierlist'),
 
 
 

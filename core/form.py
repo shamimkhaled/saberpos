@@ -120,7 +120,7 @@ class tempbilformm(forms.ModelForm):
 class CorportepayForm(forms.ModelForm):
     class Meta:
         model = corportepay
-        fields = ['ammount', 'suppiler',  'corpocatagory','remarks']
+        fields = ['ammount','supplier','corpocatagory','remarks']
 
 
         widgets = {

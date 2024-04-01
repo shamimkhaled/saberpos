@@ -157,6 +157,8 @@
         <th scope="col">CUSTOMER</th>
         <th scope="col">AMMOUNT</th>
         <th scope="col">TIME</th>
+        <th scope="col">Remarks</th>
+        <th scope="col">BILL INVOICEID</th>
     </thead>
     <tbody>
       {% for rs in returns %}
@@ -165,10 +167,14 @@
 
         <td>{{ rs.order.invoicenumber}}</td>
         
-        <td>{{ rs.customer.name}}</td>
+        <td>{{ rs.customer.name}} {{ rs.supplier.name}}</td>
         <td>{{ rs.name}}</td>
         <td>{{ rs.ammount}}</td>
         <td>{{ rs.added}}</td>
+        <td>{{ rs.remarks}}</td>
+       
+
+        <td>{{ rs.billinvoiceid}}</td>
       </td>
 
       

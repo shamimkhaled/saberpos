@@ -108,11 +108,10 @@
             <th>Username</th>
             <th>Phone</th>
             <th>DUE BALANCE</th>
-            <th>BILL RECEIVE</th>
-            <th>INVOICE LIST</th>
-            <th>BILL RECEIVE LIST</th>
-            <th>RETUEN LIST</th>
-            <th>BALANCE SHEET</th>
+            <th>MR INVOICELIST</th>
+            <th>PAYMENT LIST</th>
+            <th>BALACE SHEET</th>
+           
           </tr>
         </thead>
         <tbody>
@@ -121,12 +120,7 @@
               <td>{{ user.name }}</td>
               <td>{{ user.Phone }}</td>
               <td>{{ user.balance }}</td>
-              <td><button class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px"
-          onclick="window.location.href = '{{user.id}}/billcustomer'">
-          BILL RECEIVE
-
-            </button>
-
+              
             <td>
 
               <!-- <a href="{% url 'soldlist' %}?customer= {{user.id}}&invoicenumber=&start_date=&end_date=" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px">
@@ -134,15 +128,17 @@
               </a> -->
 
 
-              <form action="{% url 'soldlist' %}" method="get" >
+              <form action="{% url 'mrinvoicelist' %}" method="get" >
                 <input type="date" name="start_date" class="mr border rounded-md ">
                 <span class="px-1">-</span>
                 <input type="date" name="end_date" class="mr-2 border rounded-md ">
-                <input type="hidden" id="customer_id" name="customer" value="{{user.id}}">
+                <input type="hidden" id="supplier_id" name="supplier" value="{{user.id}}">
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px">
                     Search
                 </button>
             </form>
+
+
             
             <!-- <a href="#" onclick="generateClientLedgerURL()" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px">
                 INVOICE LIST
@@ -162,11 +158,12 @@
           </a> -->
 
 
-          <form action="{% url 'bill_list' %}" method="get" >
+          
+          <form action="{% url 'supplierbill_list' %}" method="get" >
             <input type="date" name="start_date" class="mr border rounded-md ">
             <span class="px-1">-</span>
             <input type="date" name="end_date" class="mr-2 border rounded-md ">
-            <input type="hidden" id="customer_id" name="customer" value="{{user.id}}">
+            <input type="hidden" id="supplier_id" name="supplier" value="{{user.id}}">
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px">
                 Search
             </button>
@@ -181,29 +178,7 @@
 
 
 
-        <td>
-
-          <!-- <a href="{% url 'soldlist' %}?customer= {{user.id}}&invoicenumber=&start_date=&end_date=" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px">
-            INVOICE LIST
-          </a> -->
-
-
-          <form action="{% url 'returnlist' %}" method="get" >
-            <input type="date" name="start_date" class="mr border rounded-md ">
-            <span class="px-1">-</span>
-            <input type="date" name="end_date" class="mr-2 border rounded-md ">
-            <input type="hidden" id="customer_id" name="customer" value="{{user.id}}">
-            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px">
-                Search
-            </button>
-        </form>
-        
-        <!-- <a href="#" onclick="generateClientLedgerURL()" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px">
-            INVOICE LIST
-        </a> -->
-        
        
-        </td>
 
 
 
@@ -271,47 +246,51 @@
   function generateClientLedgerURL() {
       var startDate = document.querySelector('input[name="start_date"]').value;
       var endDate = document.querySelector('input[name="end_date"]').value;
-      var customerId = document.getElementById('customer_id').value;
+      var supplierid= document.getElementById('supplier_id').value;
       
-      var clientLedgerURL = `{% url 'soldlist' %}?customer=${customerId}&invoicenumber=&start_date=${startDate}&end_date=${endDate}`;
+      var clientLedgerURL = `{% url 'mrinvoicelist' %}?supplier=${supplierid}&invoicenumber=&start_date=${startDate}&end_date=${endDate}`;
       
       window.location.href = clientLedgerURL;
   }
 
 
 
-  function generateClientLedgerURL() {
+
+
+
+
+function generateClientLedgerURL() {
       var startDate = document.querySelector('input[name="start_date"]').value;
       var endDate = document.querySelector('input[name="end_date"]').value;
-      var customerId = document.getElementById('customer_id').value;
+      var supplierid= document.getElementById('supplier_id').value;
       
-      var clientLedgerURL = `{% url 'bill_list' %}?customer=${customerId}&invoicenumber=&start_date=${startDate}&end_date=${endDate}`;
-      
-      window.location.href = clientLedgerURL;
-  }
-
-
-
-  function generateClientLedgerURL() {
-      var startDate = document.querySelector('input[name="start_date"]').value;
-      var endDate = document.querySelector('input[name="end_date"]').value;
-      var customerId = document.getElementById('customer_id').value;
-      
-      var clientLedgerURL = `{% url 'returnlist' %}?customer=${customerId}&invoicenumber=&start_date=${startDate}&end_date=${endDate}`;
+      var clientLedgerURL = `{% url 'supplierbill_list' %}?supplier=${supplierid}&start_date=${startDate}&end_date=${endDate}`;
       
       window.location.href = clientLedgerURL;
   }
 
 
-  function generateClientLedgerURL() {
-      var startDate = document.querySelector('input[name="start_date"]').value;
-      var endDate = document.querySelector('input[name="end_date"]').value;
-      var customerId = document.getElementById('customer_id').value;
+
+//   function generateClientLedgerURL() {
+//       var startDate = document.querySelector('input[name="start_date"]').value;
+//       var endDate = document.querySelector('input[name="end_date"]').value;
+//       var customerId = document.getElementById('customer_id').value;
       
-      var clientLedgerURL = `{% url 'customerbalancesheet' %}?customer=${customerId}&invoicenumber=&start_date=${startDate}&end_date=${endDate}`;
+//       var clientLedgerURL = `{% url 'returnlist' %}?customer=${customerId}&invoicenumber=&start_date=${startDate}&end_date=${endDate}`;
       
-      window.location.href = clientLedgerURL;
-  }
+//       window.location.href = clientLedgerURL;
+//   }
+
+
+//   function generateClientLedgerURL() {
+//       var startDate = document.querySelector('input[name="start_date"]').value;
+//       var endDate = document.querySelector('input[name="end_date"]').value;
+//       var customerId = document.getElementById('customer_id').value;
+      
+//       var clientLedgerURL = `{% url 'customerbalancesheet' %}?customer=${customerId}&invoicenumber=&start_date=${startDate}&end_date=${endDate}`;
+      
+//       window.location.href = clientLedgerURL;
+//   }
 </script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </html>

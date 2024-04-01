@@ -1,8 +1,8 @@
 from itertools import product
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from core.models import Product,UserItem,sold,Order,mrentry,mrentryrecord,returnn,Customer,dailyreport,paybillcatogory,temppaybill,paybill,bill,mrentryrecord,supplier,Customerbalacesheet
-from .filters import OrderFilter,soldfilter,dailyreportfilter,expensefilter,paybillfilter,mrfilter,returnfilter,billfilter,Customerbalacesheetfilter
+from core.models import Product,UserItem,sold,Order,mrentry,mrentryrecord,returnn,Customer,dailyreport,paybillcatogory,temppaybill,paybill,bill,mrentryrecord,supplier,Customerbalacesheet,corportepay
+from .filters import OrderFilter,soldfilter,dailyreportfilter,expensefilter,paybillfilter,mrfilter,returnfilter,billfilter,Customerbalacesheetfilter,corportepayfilter
 from django.http import HttpResponse,HttpResponseRedirect
 from django.db.models import Count, F, Value
 from django.db import connection
@@ -212,16 +212,16 @@ def cart(request):
 
   
     #products = Product.objects.filter(Q(productcatagory__icontains=category))
-    # totalbalnce=0
-    # for p in products:
-    #     totalbalnce +=p.price * p.quantity
+    totalbalnce=0
+    for p in products:
+        totalbalnce +=p.price * p.quantity
 
-    # mo = Product.objects.filter(mother=True)
+    mo = Product.objects.filter(mother=True)
 
-    # bl=0
-    # for p in mo:
-    #     bl +=p.price * p.quantity    
-    # totalbalnce=totalbalnce-bl
+    bl=0
+    for p in mo:
+        bl +=p.price * p.quantity    
+    totalbalnce=totalbalnce-bl
     
     # myFilter = OrderFilter(request.GET, queryset=products)
     # products = myFilter.qs 
@@ -249,7 +249,7 @@ def cart(request):
 
     category=  Product.objects.values('productcatagory').distinct()
     
-    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'form2':form2}
+    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'totalbalace':totalbalnce,'form2':form2}
     return render(request, 'core/cart.html', context)
 
 
@@ -383,6 +383,42 @@ def bill_list(request):
 
          returns=bill.objects.all().order_by('-id')
          myFilter =billfilter(request.GET, queryset=returns)
+         returns = myFilter.qs 
+
+
+         paginator = Paginator(returns, 15) # Show 25 contacts per page.
+
+         page_number = request.GET.get('page')
+         returns= paginator.get_page(page_number)
+        
+         context = {#'category': category,
+               'returns': returns,
+               'myFilter':myFilter
+               }
+
+
+         return render(request, 'core/bill_list.html',context)
+
+
+
+
+
+
+@login_required
+def supplierbill_list(request):
+    #   cursor = connection['db.sqlite3'].cursor()
+    #   user_products = Product.objects.raw("UPDATE core_product SET quantity =core_product.quantity-(SELECT quantity FROM core_useritem WHERE product_id = core_product.id) where EXISTS (SELECT quantity FROM core_useritem WHERE product_id = core_product.id)")
+    #   cursor.execute("UPDATE core_product SET quantity =core_product.quantity-(SELECT quantity FROM core_useritem WHERE product_id = core_product.id) where EXISTS (SELECT quantity FROM core_useritem WHERE product_id = core_product.id)")
+     
+    #   with connection.cursor() as cursor:
+    #    cursor.execute("INSERT INTO core_sold SELECT * FROM core_useritem ")
+    #     cursor.execute("UPDATE core_product SET quantity =core_product.quantity-(SELECT quantity FROM  core_sold WHERE product_id = core_product.id) where EXISTS (SELECT quantity FROM core_sold WHERE product_id = core_product.id) ")
+    #     cursor.execute("UPDATE  core_sold  SET quantityupdate=1")
+        
+    #     row = cursor.fetchone()
+
+         returns=corportepay.objects.all().order_by('-id')
+         myFilter =corportepayfilter(request.GET, queryset=returns)
          returns = myFilter.qs 
 
 
@@ -1089,13 +1125,18 @@ def productlist(request):
 
 def mrinvoicelist(request):
          orders=mrentry.objects.all().order_by('-id')
-         myFilter =mrfilter(request.GET, queryset=orders)
-         orders = myFilter.qs 
+         myFilter = mrfilter(request.GET, queryset=orders)
+         filtered_orders = myFilter.qs
         
-         context = {#'category': category,
-               'orders': orders,
-               'myFilter':myFilter
-               }
+        # Pagination
+         paginator = Paginator(filtered_orders, 10)  # Show 5 orders per page
+         page_number = request.GET.get('page')
+         page_orders = paginator.get_page(page_number)
+
+         context = {
+            'orders': page_orders,
+            'myFilter': myFilter,  # Pass the filter for the template
+        }
 
 
          return render(request, 'core/mrinvoicelist.html',context)
@@ -1788,6 +1829,26 @@ def customersolddeatails(request):
 
 
 
+
+
+@login_required
+def suplierlist(request):
+    user_list = supplier.objects.all().order_by('-id')
+    page = request.GET.get('page', 1)
+
+    paginator = Paginator(user_list, 20)
+    try:
+        users = paginator.page(page)
+    except PageNotAnInteger:
+        users = paginator.page(1)
+    except EmptyPage:
+        users = paginator.page(paginator.num_pages)
+
+    return render(request, 'core/supplierlist.html', { 'users': users })
+
+
+
+
 @login_required
 def billcustomer(request,id):
   context ={}
@@ -1922,6 +1983,7 @@ def expense(request):
             #  fs1.ammount =orders.ammount -fs1.petteyCash
             #  fs1.petteyCash =orders.petteyCash
             #  fs1.reporttype='CORPORATE'
+             fs1.save()
              item, created = dailyreport.objects.get_or_create(
             billexpense=fs1.ammount,
             ammount=orders.ammount - fs1.ammount,
@@ -1929,19 +1991,21 @@ def expense(request):
             reporttype = 'CORPORATE' " " + (str(fs1.suppiler) if fs1.suppiler else '') + (str(fs1.corpocatagory) if fs1.corpocatagory else '')
              )
              if fs1.suppiler : 
-                supplier_id = fs1.suppiler
+                supplier_id = fs1.suppiler.id  #
 
     # Query the supplier from the Supplier model
-                supplier = supplier.objects.get(pk=supplier_id)
+                #supplier = supplier.objects.get(pk=supplier_id)
 
+                supp=supplier.objects.filter(id=supplier_id).first()
+                
     # Assuming there is a balance field in the Supplier model, deduct the balance
                 if supplier.balance:
-                        supplier.balance -= fs1.ammount
-                        supplier.save()
+                        supp.balance = supp.balance -fs1.ammount
+                        supp.save()
 
 
 
-             fs1.save()
+                
              messages.success(request, 'Form submitted successfully')
              return HttpResponseRedirect("/expense")
 
