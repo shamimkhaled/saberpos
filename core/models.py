@@ -302,10 +302,13 @@ class supplier(models.Model):
     )
        
     def __str__(self):
-        return self.name         
+        return self.name     
 
 
 
+
+
+ 
 class mrentry(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     supplier= models.ForeignKey(supplier, on_delete=models.CASCADE,blank=True,null=True)
@@ -401,6 +404,7 @@ class mrentryrecord(models.Model):
         return self.product.name 
 
 
+ 
 
 
 
@@ -460,7 +464,7 @@ class paybill(models.Model):
 
 class dailyreport(models.Model):    
    order = models.ForeignKey(Order,on_delete=models.CASCADE,null=True,blank=True)  
-
+   mrentry = models.ForeignKey(mrentry,on_delete=models.CASCADE,null=True,blank=True)
    added = models.DateTimeField(auto_now_add=True,null=True) 
    ammount = models.PositiveIntegerField(default=0,null=True)
    petteyCash = models.PositiveIntegerField(default=0,null=True)
@@ -496,6 +500,23 @@ class corportepay(models.Model):
     added = models.DateTimeField(auto_now_add=True,null=True) 
     remarks = models.TextField(max_length=100,null=True)
     corpocatagory= models.ForeignKey(corpocatagory,on_delete=models.CASCADE,null=True,blank=True)
+
+
+
+
+
+
+class supplierbalancesheet(models.Model):
+    supplier = models.ForeignKey(supplier, on_delete=models.CASCADE,null=True,blank=True,related_name='supplier')
+    mrentry = models.ForeignKey(mrentry, on_delete=models.CASCADE,null=True,blank=True,related_name='mrentry')
+   
+    corportepay= models.ForeignKey(corportepay, on_delete=models.CASCADE,null=True,related_name='corportepay')
+    
+    
+    balance = models.PositiveIntegerField(default=0,null=True)
+    duebalanceadd =  models.PositiveIntegerField(default=0,null=True)
+    added = models.DateTimeField(auto_now_add=True,null=True)       
+
    
 
 

@@ -179,6 +179,7 @@
                   <th class="text-center" scope="col">Cash Sales</th>
                   <th class="text-center" scope="col">Due Sales</th>
                   <th class="text-center" scope="col">Net Sales</th>
+                  <th class="text-center" scope="col">mr entry</th>
                   <th class="text-center" scope="col">Sales Return</th>
                   <th class="text-center" scope="col">Collection</th>
                   <th class="text-center" scope="col">Expenses</th>
@@ -215,7 +216,7 @@
                         <td>
                           {{rs.order.totalprice}}
                         </td>
-                        
+                        <td>{{ rs.mrentry.totalprice}}</td>
                 
                           <td>{{ rs.returnprice}}</td>
                       
@@ -235,6 +236,9 @@
                         <td align="right">{{cashsale}}</td>
                         <td align="right" colspan="1" >{{duesale}}</td>
                         <td align="right" >{{netsale}}</td>
+                        
+
+                        <td align="right" >{{mrsale}}</td>
                         <td align="right" >{{returnprice}}</td>
                         <td align="right" >{{collection}}</td>
                         <td align="right" >{{expense}}</td>

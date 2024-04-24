@@ -162,13 +162,12 @@
 
 
         <th scope="col">ID</th>
-        <th scope="col">INVOICE NO</th>
-        <th scope="col">INVOICE DETAIL</th>
-        <th scope="col">INVOICE DETAIL1</th>
-        <th scope="col">INVOICE DUE</th>
-        <th scope="col">RETURN ITEM</th>
-        <th scope="col">RETURN DUE</th>
-        <th scope="col">BILL RECIVE ammount</th>
+       
+        <th scope="col">MR INVOICE DETAIL</th>
+      
+        <th scope="col">MR INVOICE DUE</th>
+        
+        <th scope="col">BILL PAID</th>
         <th scope="col">BALANCE</th>
         <th scope="col">TIME</th>
       </tr>
@@ -178,35 +177,26 @@
       <tr>
 
 
-        <td>{{ rs.customer.name}}</td>
-        <td>{{ rs.order.invoicenumber }}</td>
+        <td>{{ rs.supplier.name}}</td>
+        
        
         <td><button class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px"
-            onclick="window.location.href = '{{rs.order.id}}/cashmemo'">
-            Printcashmemo
+            onclick="window.location.href = '{{rs.mrentry.id}}/mrcashmemo'">
+            Printmrcashmemo
 
           </button>
         </td>
-        <td><button class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px"
-          onclick="window.location.href = '{{rs.order.id}}/cashmemo1'">
-          Printcashmemo1
-
-        </button>
+      
       </td>
       <td>
-      {{rs.order.due}}
+      {{rs.mrentry.due}}
       
     </td>
-        <td>
-          {{rs.returnn.sold.product.name}}
-        </td>
-        <td> 
-          {{rs.returnn.duereturnprice}}
-       
-      </td>
+        
+        
 
       <td> 
-        {{rs.bill.ammount}}
+        {{rs.corportepay.ammount}}
      
     </td>
 

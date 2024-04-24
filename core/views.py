@@ -1,9 +1,8 @@
 from itertools import product
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from core.models import Product,UserItem,sold,Order,mrentry,mrentryrecord,returnn,Customer,dailyreport,paybillcatogory,temppaybill,paybill,bill,mrentryrecord,supplier,Customerbalacesheet,corportepay
-from .filters import OrderFilter,soldfilter,dailyreportfilter,expensefilter,paybillfilter,mrfilter,returnfilter,billfilter,Customerbalacesheetfilter,corportepayfilter
-from django.http import HttpResponse,HttpResponseRedirect
+from core.models import Product,UserItem,sold,Order,mrentry,mrentryrecord,returnn,Customer,dailyreport,paybillcatogory,temppaybill,paybill,bill,mrentryrecord,supplier,Customerbalacesheet,corportepay,supplierbalancesheet
+from .filters import OrderFilter,soldfilter,dailyreportfilter,expensefilter,paybillfilter,mrfilter,returnfilter,billfilter,Customerbalacesheetfilter,corportepayfilter,supplierbalanecesheetfilter
 from django.db.models import Count, F, Value
 from django.db import connection
 from core.form import soldformm, useritem,GeeksForm,mrr,returnnform,billfrom,dailyreportt,tempbilformm,mreditformm,CorportepayForm
@@ -45,6 +44,9 @@ from rest_framework import status
 import datetime
 import pytz
 from datetime import datetime as dt_datetime
+from django.core.management.base import BaseCommand
+
+
 
 @login_required
 def cart(request):
@@ -212,7 +214,16 @@ def cart(request):
 
   
     #products = Product.objects.filter(Q(productcatagory__icontains=category))
-    
+    totalbalnce=0
+    for p in products:
+        totalbalnce +=p.price * p.quantity
+
+    mo = Product.objects.filter(mother=True)
+
+    bl=0
+    for p in mo:
+        bl +=p.price * p.quantity    
+    totalbalnce=totalbalnce-bl
     
     # myFilter = OrderFilter(request.GET, queryset=products)
     # products = myFilter.qs 
@@ -240,7 +251,7 @@ def cart(request):
 
     category=  Product.objects.values('productcatagory').distinct()
     
-    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'form2':form2}
+    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'totalbalace':totalbalnce,'form2':form2}
     return render(request, 'core/cart.html', context)
 
 
@@ -288,7 +299,7 @@ def soldlist(request):
 
 
 @login_required
-def customerbalancesheet(request):
+def customerbalancesheetlist(request):
       #cursor = connection['db.sqlite3'].cursor()
       #user_products = Product.objects.raw("UPDATE core_product SET quantity =core_product.quantity-(SELECT quantity FROM core_useritem WHERE product_id = core_product.id) where EXISTS (SELECT quantity FROM core_useritem WHERE product_id = core_product.id)")
       #cursor.execute("UPDATE core_product SET quantity =core_product.quantity-(SELECT quantity FROM core_useritem WHERE product_id = core_product.id) where EXISTS (SELECT quantity FROM core_useritem WHERE product_id = core_product.id)")
@@ -321,6 +332,39 @@ def customerbalancesheet(request):
 
 
         return render(request, 'core/cusblsheet.html',context)
+
+
+
+
+
+
+
+@login_required
+def supplierbalancesheetlist(request):
+      
+
+        orders = supplierbalancesheet.objects.all().order_by('-id')
+
+        # Apply filtering using the custom filter (soldfilter)
+        myFilter = supplierbalanecesheetfilter(request.GET, queryset=orders)
+        filtered_orders = myFilter.qs
+        
+        # Pagination
+        paginator = Paginator(filtered_orders, 16)  # Show 5 orders per page
+        page_number = request.GET.get('page')
+        page_orders = paginator.get_page(page_number)
+
+        context = {
+            'orders': page_orders,
+            'myFilter': myFilter,  # Pass the filter for the template
+        }
+
+        
+       
+
+
+        return render(request, 'core/supblsheet.html',context)
+
 
 
 
@@ -1266,6 +1310,14 @@ def mr(request):
             sup =supplier.objects.filter(id=fs.supplier_id).first()
             sup.balance +=fs.due
             sup.save()
+
+
+            item, created =supplierbalancesheet.objects.get_or_create(
+            mrentry_id=fs.id,
+            supplier=sup,
+            balance=sup.balance,
+            duebalanceadd =fs.due
+        )
         
         
 
@@ -1293,20 +1345,48 @@ def mr(request):
                 product.save()
 
 
+        obj = dailyreport.objects.all().last()
+        item, created =dailyreport.objects.get_or_create(
+            mrentry_id=fs.id,
+            ammount=obj.ammount+fs.paid,
+            petteyCash=obj.petteyCash,
+            reporttype='MR ENTRY'
+            
+        )        
+        return HttpResponseRedirect("/mrinvoicelist")
+
 
 
         
     
-    category= request.GET.get('category', '')  
+    category = request.GET.get('category', '')
     search = request.GET.get('search', '')
-    if category and search:
-       products = Product.objects.filter(Q(name__icontains=search) & Q(productcatagory__icontains=category))
-    elif search:
-       products = Product.objects.filter(Q(name__icontains=search))
+    mother = request.GET.get('mother', '')
+
+    if category and search and mother:
+        products = Product.objects.filter(
+            Q(name__icontains=search) & Q(productcatagory__icontains=category) & Q(mother=mother)
+        )
+    elif category and search:
+        products = Product.objects.filter(
+            Q(name__icontains=search) & Q(productcatagory__icontains=category)
+        )
+    elif category and mother:
+        products = Product.objects.filter(
+            Q(productcatagory__icontains=category) & Q(mother=mother)
+        )
+    elif search and mother:
+        products = Product.objects.filter(
+            Q(name__icontains=search) & Q(mother=mother)
+        )
     elif category:
-       products = Product.objects.filter(Q(productcatagory__icontains=category))
+        products = Product.objects.filter(Q(productcatagory__icontains=category))
+    elif search:
+        products = Product.objects.filter(Q(name__icontains=search))
+    elif mother:
+        products = Product.objects.filter(Q(mother=mother))
     else:
-       products = Product.objects.all()
+        products = Product.objects.all()
   
     #products = Product.objects.filter(Q(productcatagory__icontains=category))
     totalbalnce=0
@@ -1315,11 +1395,7 @@ def mr(request):
 
     mo = Product.objects.filter(mother=True)
 
-    bl=0
-    for p in mo:
-        bl +=p.price * p.quantity    
-    totalbalnce=totalbalnce-bl
-    
+  
     # myFilter = OrderFilter(request.GET, queryset=products)
     # products = myFilter.qs 
 
@@ -1346,31 +1422,13 @@ def mr(request):
 
     category=  Product.objects.values('productcatagory').distinct()
     
-    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'totalbalace':totalbalnce}
+    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total}
     return render(request, 'core/mr.html', context)
    
     
    
 
-    # p = Paginator(products, 5)  # creating a paginator object
-    # # getting the desired page number from url
-    # page_number = request.GET.get('page')
-    # try:
-    #     page_obj = p.get_page(page_number)  # returns the desired page object
-    # except PageNotAnInteger:
-    #     # if page_number is not an integer then assign the first page
-    #     page_obj = p.page(1)
-    # except EmptyPage:
-    #     # if page is empty then return last page
-    #     page_obj = p.page(p.num_pages)
-
-    
-    
-    # products=page_obj  
-    
-    
-    context = {'products': products,'form':form,'user_products':user_products,'total':total}
-    return render(request, 'core/mr.html', context)
+ 
 
 
 def returnreasonn(request,id):
@@ -1859,6 +1917,13 @@ def billcustomer(request,id):
             
             )
            
+           item, created =Customerbalacesheet.objects.get_or_create(
+            bill_id=fs.id,
+            customer=cus,
+            balance=cus.balance,
+          
+        )
+           
            messages.success(request, 'Form submission successful')
 
   context["form"] = form
@@ -1872,10 +1937,10 @@ def dalyreport(request):
          orders = myFilter.qs 
 
          
-         paginator = Paginator(orders, 15) # Show 25 contacts per page.
+        #  paginator = Paginator(orders, 15) # Show 25 contacts per page.
 
-         page_number = request.GET.get('page')
-         orders = paginator.get_page(page_number)
+        #  page_number = request.GET.get('page')
+        #  orders = paginator.get_page(page_number)
          cashsale=0
          duesale=0
          netsale=0
@@ -1885,8 +1950,8 @@ def dalyreport(request):
          returnprice=0
         
          orderlist=Order.objects.all()
-         
-
+         mrlist=mrentry.objects.all()
+         mrsale=0
 
 
          for rs in orders:
@@ -1894,7 +1959,10 @@ def dalyreport(request):
                 if invoice.id == rs.order_id:
                     cashsale += invoice.paid
                     duesale += invoice.due
-            
+
+           for mrentri in mrlist:  
+                 if mrentri.id == rs.mrentry_id:      
+                    mrsale += mrentri.totalprice
            returnprice += rs.returnprice
     
            if rs.bill and rs.bill.ammount is not None:
@@ -1918,6 +1986,7 @@ def dalyreport(request):
                 'cashsale':cashsale,
                 'duesale':duesale,
                 'netsale':cashsale + duesale ,
+                'mrsale' : mrsale,
                 'returnprice':returnprice,
                 'collection':collection,
                 'expense' :expense,
@@ -1979,10 +2048,10 @@ def expense(request):
             billexpense=fs1.ammount,
             ammount=orders.ammount - fs1.ammount,
             petteyCash=orders.petteyCash,
-            reporttype = 'CORPORATE' " " + (str(fs1.suppiler) if fs1.suppiler else '') + (str(fs1.corpocatagory) if fs1.corpocatagory else '')
+            reporttype = 'CORPORATE' " " + (str(fs1.supplier) if fs1.supplier else '') + (str(fs1.corpocatagory) if fs1.corpocatagory else '')
              )
-             if fs1.suppiler : 
-                supplier_id = fs1.suppiler.id  #
+             if fs1.supplier : 
+                supplier_id = fs1.supplier.id  #
 
     # Query the supplier from the Supplier model
                 #supplier = supplier.objects.get(pk=supplier_id)
@@ -1990,9 +2059,18 @@ def expense(request):
                 supp=supplier.objects.filter(id=supplier_id).first()
                 
     # Assuming there is a balance field in the Supplier model, deduct the balance
-                if supplier.balance:
-                        supp.balance = supp.balance -fs1.ammount
-                        supp.save()
+                
+                supp.balance = supp.balance -fs1.ammount
+                supp.save()
+
+
+
+                item, created =supplierbalancesheet.objects.get_or_create(
+           
+            supplier=supp,
+            balance=supp.balance,
+            corportepay=fs1
+        )
 
 
 
@@ -2793,6 +2871,136 @@ def userItemstore(request):
 
 
 
+@csrf_exempt
+def mruserItemstore(request):
+    if request.method == 'POST':
+        # Retrieve the form data from the request
+        
+        json_data = json.loads(request.body)
+            # Extract the required fields from the JSON data
+        productId = json_data.get('productId')
+        product = json_data.get('product')
+        quantity = json_data.get('quantity')
+        price1 = json_data.get('price1')
+        price2 = json_data.get('price2')
+        status = json_data.get('status')
+        engine = json_data.get('engine')
+        exchangeAmount = json_data.get('exchangeAmount')
+        spareName = json_data.get('spareName')
+        remarks = json_data.get('remarks')
+        print(productId)
+        obj = get_object_or_404(Product, id = productId)
+        # Create an object using the form data
+
+
+      
+        
+        obj = UserItem.objects.create(
+                product_id=productId,
+                user_id=request.user.id,
+                quantity=quantity,
+                price1=price1,
+                price2=price2,
+                groupproduct = False,
+                status= status,
+                remarks = remarks ,
+                exchange_ammount =exchangeAmount ,
+                sparename =spareName ,
+                enginecomplete = engine
+
+                
+            )
+
+        # if qua - fs.quantity < 0:
+        #     messages.error(request, 'Do not have that quantity')
+        #     return redirect('fianaleditcashmemo', id=id)  # Replace 'update_view' with your actual URL name
+
+        # form.save()
+
+        # # Update product quantity
+        # productnew.quantity = qua - fs.quantity
+        # productnew.save()
+
+        # messages.success(request, 'Form submitted successfully')
+
+        
+        
+       
+        obj = get_object_or_404(Product, id = productId)
+        motherproduct = Product.objects.all().filter(groupname=obj.groupname,mother=True).first()
+        if  obj.mother ==1 :
+            products = Product.objects.filter(groupname=obj.groupname).exclude(groupname='').exclude(id=obj.id)
+            
+
+            # allsubquantity=0
+            # for product in products:
+            #     if int(product.quantity) < int(product.subpartquantity)*int(quantity) :
+            #         allsubquantity=1
+
+            # print(str(allsubquantity) + "JJJJJ")        
+            # if allsubquantity ==0:
+            for product in products:
+                print(product.id)
+                
+        # Create an object using the form data
+                
+                print(product.subpartquantity )
+                totalquan=product.subpartquantity * int(quantity)
+                obj = UserItem.objects.create(
+                product_id=product.id,
+            
+            
+                user_id=request.user.id,
+                quantity =  totalquan ,
+                price1=0,
+                price2=0,
+                groupproduct = True,
+                status= status,
+                remarks = remarks ,
+                exchange_ammount =exchangeAmount ,
+                sparename =spareName ,
+                enginecomplete = engine
+
+                
+            )
+
+
+
+
+
+
+
+       
+    
+    # pass the object as instance in form
+    
+
+
+
+        # You can perform additional operations with the created object if needed
+
+        # Return a JSON response
+        return JsonResponse({"message": "Form data received and object created successfully"})
+
+    # Return an error response for other request methods
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+
+
+
+from django.http import JsonResponse
+from django.views.generic import View
+
+
+class CustomerAutocomplete(autocomplete.Select2QuerySetView):
+    def get_queryset(self):
+        qs = Customer.objects.all()
+
+        if self.q:
+            qs = qs.filter(name__icontains=self.q)
+
+        return qs
     
     
          

@@ -1,6 +1,6 @@
 from django.contrib.auth.views import LoginView, LogoutView
 from django.urls import path,include
-from .views import  update_view,ggroup,group,mrupdate_view,customersolddeatails,chalan,billcustomer,groupupdate_view,dalyreport,dalyreportsearch,expenseform,expensestore,addproduct,addproductgroup,CountryAutocomplete,sms,salesreport,expensereport,api_productlist,delete_user_item,apiaddproduct,userItemstore,mreditcashmemo,smssend
+from .views import  update_view,ggroup,group,mrupdate_view,customersolddeatails,chalan,billcustomer,groupupdate_view,dalyreport,dalyreportsearch,expenseform,expensestore,addproduct,addproductgroup,CountryAutocomplete,sms,salesreport,expensereport,api_productlist,delete_user_item,apiaddproduct,userItemstore,mreditcashmemo,smssend,supplierbalancesheetlist,CustomerAutocomplete
 
 from django.urls import re_path as url
 from django.urls import reverse
@@ -70,10 +70,11 @@ urlpatterns = [
     path('customerlist', views.customerlist, name='customerlist'),
    # path('customerdetail', views.customersolddeatails, name='bill'),
     path("search/", views.search, name="search_results"),
-    path('customerbalancesheet', views.customerbalancesheet, name='customerbalancesheet'),
+    path('customerbalancesheet', views.customerbalancesheetlist, name='customerbalancesheet'),
 
 
     path('suplierlist', views.suplierlist, name='suplierlist'),
+    path('supplierbalancesheet', views.supplierbalancesheetlist, name='supplierbalancesheet'),
 
 
 
@@ -102,6 +103,9 @@ urlpatterns = [
     path('apiaddproduct/<int:item_id>/', views.apiaddproduct, name='apiaddcart'),
 
     path('api_useritemstore/', views.userItemstore, name="userItemstore"),
+    path('api_mruseritemstore/', views.mruserItemstore, name="mruserItemstore"),
+
+     path('customer-autocomplete/', CustomerAutocomplete.as_view(), name='customer-autocomplete')
 ]
 
 

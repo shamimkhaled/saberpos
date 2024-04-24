@@ -1,14 +1,6 @@
 from django import forms  
 from core.models import Order, UserItem,Product,mrentry,returnn,sold,bill,dailyreport,temppaybill,mrentryrecord,corportepay
-  
-class useritem(forms.ModelForm):  
-    class Meta:  
-        model = Order 
-        fields = ['customer','name','address','paid',"discount","Phone",'vehicleno']
-        widgets = {
-            'name': forms.TextInput(attrs={'placeholder': 'Name'}),
-           
-        }
+from dal import autocomplete
 
 
 class mrr(forms.ModelForm):  
@@ -18,6 +10,17 @@ class mrr(forms.ModelForm):
         widgets = {
             'name': forms.TextInput(attrs={'placeholder': 'Name'}),
            
+        }
+
+
+
+class  useritem(forms.ModelForm):
+    class Meta:
+        model = Order 
+        fields = ['customer', 'name', 'address', 'paid', 'discount', 'Phone', 'vehicleno']
+        widgets = {
+            'name': forms.TextInput(attrs={'placeholder': 'Name'}),
+            'customer': autocomplete.ModelSelect2(url='customer-autocomplete'),
         }
 
 

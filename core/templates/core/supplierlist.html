@@ -190,11 +190,11 @@
           </a> -->
 
 
-          <form action="{% url 'customerbalancesheet' %}" method="get" >
+          <form action="{% url 'supplierbalancesheet' %}" method="get" >
             <input type="date" name="start_date" class="mr border rounded-md ">
             <span class="px-1">-</span>
             <input type="date" name="end_date" class="mr-2 border rounded-md ">
-            <input type="hidden" id="customer_id" name="customer" value="{{user.id}}">
+            <input type="hidden" id="supplier_id" name="supplier" value="{{user.id}}">
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-1 px-1 rounded w-40  mr-px">
                 Search
             </button>
@@ -268,6 +268,19 @@ function generateClientLedgerURL() {
       
       window.location.href = clientLedgerURL;
   }
+
+
+
+  function generateClientLedgerURL() {
+      var startDate = document.querySelector('input[name="start_date"]').value;
+      var endDate = document.querySelector('input[name="end_date"]').value;
+      var supplierid= document.getElementById('supplier_id').value;
+      
+      var clientLedgerURL = `{% url 'supplierbalancesheet' %}?supplier=${supplierid}&start_date=${startDate}&end_date=${endDate}`;
+      
+      window.location.href = clientLedgerURL;
+  }
+
 
 
 
