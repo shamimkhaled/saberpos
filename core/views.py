@@ -212,16 +212,7 @@ def cart(request):
 
   
     #products = Product.objects.filter(Q(productcatagory__icontains=category))
-    totalbalnce=0
-    for p in products:
-        totalbalnce +=p.price * p.quantity
-
-    mo = Product.objects.filter(mother=True)
-
-    bl=0
-    for p in mo:
-        bl +=p.price * p.quantity    
-    totalbalnce=totalbalnce-bl
+    
     
     # myFilter = OrderFilter(request.GET, queryset=products)
     # products = myFilter.qs 
