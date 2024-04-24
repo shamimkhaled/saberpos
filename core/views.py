@@ -240,7 +240,7 @@ def cart(request):
 
     category=  Product.objects.values('productcatagory').distinct()
     
-    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'totalbalace':totalbalnce,'form2':form2}
+    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'form2':form2}
     return render(request, 'core/cart.html', context)
 
 
