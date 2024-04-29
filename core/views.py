@@ -214,12 +214,14 @@ def cart(request):
 
   
     #products = Product.objects.filter(Q(productcatagory__icontains=category))
-  
+    totalbalnce=0
+    for p in products:
+        totalbalnce +=p.price * p.quantity
 
     mo = Product.objects.filter(mother=True)
 
-    bl=0
-   
+    
+    
     # myFilter = OrderFilter(request.GET, queryset=products)
     # products = myFilter.qs 
 
@@ -1633,7 +1635,7 @@ def editcashmemo(request,id):
 
          page_number = request.GET.get('page')
          pro = paginator.get_page(page_number) 
-         if orderr.customer :
+         if orderr.customer:
            oldid= orderr.customer.id
          if form.is_valid():
             fs = form.save(commit=False)
@@ -1689,8 +1691,8 @@ def editcashmemo(request,id):
                 product.save()
 
 
-
-            if fs.customer.id != oldid:
+            if orderr.customer:
+              if fs.customer.id != oldid:
                 print("Updating customer balance...")  # Informative print statement
 
         # Update customer balance if customer changed for the order
@@ -1727,31 +1729,32 @@ def editcashmemo(request,id):
 
     # Complete form saving after all checks and updates
  # Save the form data to create the model instance
+                if orderr.customer:
+                    cus =Customer.objects.filter(id=daily.order.customer_id).first()
 
-                cus =Customer.objects.filter(id=daily.order.customer_id).first()
-
-                olddue=total - daily.order.paid
-                newdue=total - fs.paid
+                    olddue=total - daily.order.paid
+                    newdue=total - fs.paid
                 
 
     # Update the customer's balance
-                cus.balance = (cus.balance - olddue) +newdue
-
-    # Save the updated customer object
-                cus.save()
-
-                order_creation_date = orderr.added
-                balance_sheets = Customerbalacesheet.objects.filter(added__gte=order_creation_date, customer=fs.customer) 
                 
-                for i in balance_sheets:
+                    cus.balance = (cus.balance - olddue) +newdue
+
+        # Save the updated customer object
+                    cus.save()
+
+                    order_creation_date = orderr.added
+                    balance_sheets = Customerbalacesheet.objects.filter(added__gte=order_creation_date, customer=fs.customer) 
                     
-                    if(newdue-olddue)>0 :
-                        i.balance = i.balance - (newdue-olddue)
-                        i.save()
-                    else :
+                    for i in balance_sheets:
                         
-                        i.balance = i.balance + (newdue-olddue)
-                        i.save()
+                        if(newdue-olddue)>0 :
+                            i.balance = i.balance - (newdue-olddue)
+                            i.save()
+                        else :
+                            
+                            i.balance = i.balance + (newdue-olddue)
+                            i.save()
 
 
              
