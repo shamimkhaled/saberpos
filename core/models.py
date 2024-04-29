@@ -151,6 +151,19 @@ class Order(models.Model):
     
 
 
+
+class plreport(models.Model):
+      product = models.ForeignKey(Product, on_delete=models.CASCADE)
+      order = models.ForeignKey(Order, on_delete=models.CASCADE,null=True,blank=True)
+      user = models.ForeignKey(User, on_delete=models.CASCADE)
+      stockquantity = models.PositiveIntegerField(default=0)
+      changequanitity =models.PositiveIntegerField(default=0)
+      reporttype= models.CharField(max_length=500,blank=True,null=True)
+      added = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+
+
+
+
 class sold(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE,null=True,blank=True)

@@ -1,8 +1,8 @@
 from itertools import product
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from core.models import Product,UserItem,sold,Order,mrentry,mrentryrecord,returnn,Customer,dailyreport,paybillcatogory,temppaybill,paybill,bill,mrentryrecord,supplier,Customerbalacesheet,corportepay,supplierbalancesheet
-from .filters import OrderFilter,soldfilter,dailyreportfilter,expensefilter,paybillfilter,mrfilter,returnfilter,billfilter,Customerbalacesheetfilter,corportepayfilter,supplierbalanecesheetfilter
+from core.models import Product,UserItem,sold,Order,mrentry,mrentryrecord,returnn,Customer,dailyreport,paybillcatogory,temppaybill,paybill,bill,mrentryrecord,supplier,Customerbalacesheet,corportepay,supplierbalancesheet,plreport
+from .filters import OrderFilter,soldfilter,dailyreportfilter,expensefilter,paybillfilter,mrfilter,returnfilter,billfilter,Customerbalacesheetfilter,corportepayfilter,supplierbalanecesheetfilter,plreportfilter
 from django.db.models import Count, F, Value
 from django.db import connection
 from core.form import soldformm, useritem,GeeksForm,mrr,returnnform,billfrom,dailyreportt,tempbilformm,mreditformm,CorportepayForm
@@ -214,16 +214,16 @@ def cart(request):
 
   
     #products = Product.objects.filter(Q(productcatagory__icontains=category))
-    # totalbalnce=0
-    # for p in products:
-    #     totalbalnce +=p.price * p.quantity
+    totalbalnce=0
+    for p in products:
+        totalbalnce +=p.price * p.quantity
 
-    # mo = Product.objects.filter(mother=True)
+    mo = Product.objects.filter(mother=True)
 
-    # bl=0
-    # for p in mo:
-    #     bl +=p.price * p.quantity    
-    # totalbalnce=totalbalnce-bl
+    bl=0
+    for p in mo:
+        bl +=p.price * p.quantity    
+    totalbalnce=totalbalnce-bl
     
     # myFilter = OrderFilter(request.GET, queryset=products)
     # products = myFilter.qs 
@@ -251,7 +251,7 @@ def cart(request):
 
     category=  Product.objects.values('productcatagory').distinct()
     
-    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'form2':form2}
+    context = {'category':category,'products': products,'form':form,'user_products':user_products,'pro':pro,'total':total,'totalbalace':totalbalnce,'form2':form2}
     return render(request, 'core/cart.html', context)
 
 
@@ -293,6 +293,47 @@ def soldlist(request):
 
 
         return render(request, 'core/soldlist.html',context)
+
+
+
+
+
+
+
+@login_required
+def plreportlist(request):
+      #cursor = connection['db.sqlite3'].cursor()
+      #user_products = Product.objects.raw("UPDATE core_product SET quantity =core_product.quantity-(SELECT quantity FROM core_useritem WHERE product_id = core_product.id) where EXISTS (SELECT quantity FROM core_useritem WHERE product_id = core_product.id)")
+      #cursor.execute("UPDATE core_product SET quantity =core_product.quantity-(SELECT quantity FROM core_useritem WHERE product_id = core_product.id) where EXISTS (SELECT quantity FROM core_useritem WHERE product_id = core_product.id)")
+     
+      #with connection.cursor() as cursor:
+       # cursor.execute("INSERT INTO core_sold SELECT * FROM core_useritem ")
+        #cursor.execute("UPDATE core_product SET quantity =core_product.quantity-(SELECT quantity FROM  core_sold WHERE product_id = core_product.id) where EXISTS (SELECT quantity FROM core_sold WHERE product_id = core_product.id) ")
+        #cursor.execute("UPDATE  core_sold  SET quantityupdate=1")
+        
+        #row = cursor.fetchone()
+
+        orders = plreport.objects.all().order_by('-id')
+
+        # Apply filtering using the custom filter (soldfilter)
+        myFilter = plreportfilter(request.GET, queryset=orders)
+        filtered_orders = myFilter.qs
+        
+        # Pagination
+        paginator = Paginator(filtered_orders, 16)  # Show 5 orders per page
+        page_number = request.GET.get('page')
+        page_orders = paginator.get_page(page_number)
+
+        context = {
+            'orders': page_orders,
+            'myFilter': myFilter,  # Pass the filter for the template
+        }
+
+        
+       
+
+
+        return render(request, 'core/plreport.html',context)
 
 
 
@@ -1597,7 +1638,8 @@ def editcashmemo(request,id):
 
          page_number = request.GET.get('page')
          pro = paginator.get_page(page_number) 
-         oldid= orderr.customer.id
+         if orderr.customer :
+           oldid= orderr.customer.id
          if form.is_valid():
             fs = form.save(commit=False)
             

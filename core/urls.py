@@ -80,6 +80,8 @@ urlpatterns = [
 
     path("daily", views.dalyreport, name=""),
     path("expensereport", views.expensereport, name=""),
+    path('plreport', views.plreportlist, name='plreportlist'),
+
 
 
     path("expense", views.expense, name=""),

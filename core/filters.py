@@ -90,6 +90,19 @@ class soldfilter(django_filters.FilterSet):
 
 
 
+class plreportfilter(django_filters.FilterSet):
+  
+  start_date = DateFilter(field_name="added", lookup_expr='gte' ,widget=forms.DateInput(attrs={'type': 'date'}),)
+  end_date = DateFilter(field_name="added", lookup_expr='lte',widget=forms.DateInput(attrs={'type': 'date'}))
+  #start_time = DateTimeFilter(field_name="added", lookup_expr='time__gte', widget=AdminTimeWidget())
+  #end_time = DateTimeFilter(field_name="added", lookup_expr='time__lte', widget=AdminTimeWidget())
+  
+  class Meta:
+   model = plreport
+   fields = ['product']   
+
+
+
 
 
 
